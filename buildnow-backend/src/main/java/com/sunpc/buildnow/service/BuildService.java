@@ -1,0 +1,1415 @@
+package com.sunpc.buildnow.service;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.sunpc.buildnow.util.io.CodeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sunpc.buildnow.dao.IBuildDao;
+
+@Service
+public class BuildService implements IBuildService {
+
+	@Autowired
+	private IBuildDao buildDao;
+
+	public static long USER_ID;
+
+	@Override
+	public Map<String, Object> authenticate(String email, String password, String envCode) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("authenticated", false);
+		result.put("message", "");
+//		try {
+//			Properties parms = new Properties();
+//			parms.put(EDConstants.IIP_CWA_JNDI_SECURITY_PROTOCOL, "tls");
+//			parms.put(EDConstants.IIP_CWA_FORCE_SECURE_LDAP_SEARCH, "true");
+//			IIPUtilities.authenticate("bluepages.ibm.com", email, password, parms);
+//			// If IIP authenticated
+//			Map<String, Object> rs = buildDao.getMember(envCode, email);
+//			List<Map<String, Object>> memberList = (List<Map<String, Object>>) rs.get("result");
+//			if (memberList.size() > 0) {
+//				// Return member
+//				Map<String, Object> member = memberList.get(0);
+//				result.put("authenticated", true);
+//				result.put("message", "authenticate success");
+//				result.put("userId", Long.valueOf(String.valueOf(member.get("USER_ID"))));
+//				USER_ID = Long.valueOf(String.valueOf(member.get("USER_ID")));
+//				result.put("userName", member.get("USER_NAME").toString().trim());
+//				result.put("userRole", member.get("USER_ROLE").toString().trim());
+//				result.put("defaults", buildDao.getDefaults(envCode));
+//				// Update defaultEnvIndc
+//				buildDao.updateDefaultEnv(Long.valueOf(String.valueOf(member.get("USER_ID"))), envCode);
+//			} else {
+//				result.put("message", "You don't have permission to access / on this workspace.");
+//			}
+//		} catch (Exception e) {
+//			System.err.println("Authentication failed: " + e.getMessage());
+//			result.put("message", "Incorrect username or password. Please retry.");
+//			e.printStackTrace();
+//			return result;
+//		}
+		return result;
+	}
+
+	@Override
+	public Map<String, Object> searchBluePages(String email) {
+		Map<String, Object> result = new HashMap<String, Object>();
+//		try {
+//			BPResults peopleResults = BluePages.getPersonsByInternet(email);
+//			String firstName = (String) peopleResults.getColumn("HRFIRSTNAME").elementAt(0);
+//			String lastName = (String) peopleResults.getColumn("HRLASTNAME").elementAt(0);
+//			result.put("result", "success");
+//			result.put("name", firstName + " " + lastName);
+//		} catch (Exception e) {
+//			result.put("result", "failed");
+//			result.put("message", e.getMessage());
+//			e.printStackTrace();
+//			return result;
+//		}
+		return result;
+	}
+
+	@Override
+	public Map<String, Object> getEnvs() {
+		return buildDao.getEnvs();
+	}
+
+	@Override
+	public Map<String, Object> getEnv(String envCode) {
+		return buildDao.getEnv(envCode);
+	}
+
+	@Override
+	public Map<String, Object> getDefaultEnv(String userEmail) {
+		return buildDao.getDefaultEnv(userEmail);
+	}
+
+	@Override
+	public Map<String, Object> saveEnv(String envCode, String envDesc, int lastActUserId) {
+		return buildDao.saveEnv(envCode, envDesc, lastActUserId);
+	}
+
+	@Override
+	public Map<String, Object> getMembers(String envCode) {
+		return buildDao.getMembers(envCode);
+	}
+
+	@Override
+	public Map<String, Object> addMember(String envCode, String userName, String userEmail, String userRole, int lastActUserId) {
+		return buildDao.addMember(envCode, userName, userEmail, userRole, lastActUserId);
+	}
+
+	@Override
+	public Map<String, Object> updateMemberRole(String envCode, String userEmail, String userRole, int lastActUserId) {
+		return buildDao.updateMemberRole(envCode, userEmail, userRole, lastActUserId);
+	}
+
+	@Override
+	public Map<String, Object> updateMemberStatus(String envCode, String userEmail, String apprStatus, int lastActUserId) {
+		return buildDao.updateMemberStatus(envCode, userEmail, apprStatus, lastActUserId);
+	}
+
+	@Override
+	public Map<String, Object> getDefaults(String envCode) {
+		return buildDao.getDefaults(envCode);
+	}
+	
+	@Override
+	public Map<String, Object> saveEnvDefaults(String envCode, List<Map<String, Object>> params, int lastActUserId) {
+		return buildDao.saveEnvDefaults(envCode, params, lastActUserId);
+	}
+
+	@Override
+	public Map<String, Object> saveJson(Map<String, Object>[] params) {
+		for (Map<String, Object> map : params) {
+			String uuid = (String) map.get("objectId");
+			String type = (String) map.get("objectType");
+			String name = (String) map.get("objectName");
+			String json = (String) map.get("objectJson");
+			String envCode = (String) map.get("workspace");
+			int userId = (int) map.get("userId");
+
+			buildDao.saveJson(uuid, type, name, json, envCode, userId);
+		}
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("result", "success");
+		return resultMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> buildSym(Map<String, Object> layout, String sortLib) {
+		// -- just ERWIN debug purpose, write out parm
+		//System.out.println("someone called me");
+		//System.out.println("layout received by buildSym is" + layout);
+
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// build code
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		String symName = (String) layout.get("name");
+		buildCode.put("name", symName);
+		buildCode.put("library", sortLib);
+		List<Map<String, Object>> layoutDataList = (List<Map<String, Object>>) layout.get("data");
+		int startPos = 1;
+		String codeContent = "";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "* SYMBOLICS: " + symName + "\r\n";
+		codeContent += "* Generated by iBuild " + currTime + "\r\n";
+		codeContent += "***********************************************************************\r\n";
+		for (Map<String, Object> layoutEntry : layoutDataList) {
+			if (layoutEntry.get("name") != null) {
+				codeContent += "  " + layoutEntry.get("name").toString().trim() + "," + startPos + ","
+						+ layoutEntry.get("length") + "," + layoutEntry.get("type") + "\r\n";
+				/*
+				 * //build extra SYMNAME for BUILD out put, which should have no TYPE //these
+				 * recs suffixed with _B codeContent += "  " + layoutEntry.get("name") + "_B," +
+				 * startPos + "," + layoutEntry.get("length") + "\r\n";
+				 */
+				startPos += (int) layoutEntry.get("length");
+			}
+		}
+		buildCode.put("code", codeContent);
+		return buildCode;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> buildSymErw(Map<String, Object> orgInLayout, Map<String, Object> rebInLayout,
+			String sortLib) {
+		// -- just ERWIN debug purpose, write out parm
+		// System.out.println("someone called me");
+		// System.out.println("layout received by buildSym is" + orgInLayout);
+
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// build code
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		String symName = (String) orgInLayout.get("name");
+		buildCode.put("name", symName);
+		buildCode.put("library", sortLib);
+
+		// Header for SYMNAME
+		String codeContent = "";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "* SYMBOLICS: " + symName + "\r\n";
+		codeContent += "* Generated by iBuild " + currTime + "\r\n";
+		codeContent += "***********************************************************************\r\n"; 
+		codeContent += "*******  bellow nicknames are for ORIGINAL layout format        *******\r\n";
+		codeContent += "***********************************************************************\r\n"; 
+
+		// process original Input file layout's sym
+		List<Map<String, Object>> layoutDataList = (List<Map<String, Object>>) orgInLayout.get("data");
+		int startPos = 1;
+		for (Map<String, Object> layoutEntry : layoutDataList) {
+			if (layoutEntry.get("name") != null) {
+				codeContent += "  " + layoutEntry.get("name").toString().trim() + "," + startPos + ","
+						+ layoutEntry.get("length") + "," + layoutEntry.get("type") + "\r\n";
+				// + "\r\n";
+				startPos += (int) layoutEntry.get("length");
+			}
+		}
+		System.out.println("codeContent in buildSymErw =" + codeContent);
+
+		codeContent += "***********************************************************************\r\n"; 
+		codeContent += "*******  bellow nicknames are for REBUILDE inrec format         *******\r\n";
+		codeContent += "***********************************************************************\r\n"; 
+		// process reBuild In-Rec layout's sym
+		layoutDataList = (List<Map<String, Object>>) rebInLayout.get("data");
+		startPos = 1;
+		for (Map<String, Object> layoutEntry : layoutDataList) {
+			if (layoutEntry.get("name") != null) {
+				codeContent += "  " + layoutEntry.get("name").toString().trim() + "_B," + startPos + ","
+						+ layoutEntry.get("length") + "," + layoutEntry.get("type") + "\r\n";
+
+				startPos += (int) layoutEntry.get("length");
+			}
+		}
+
+		codeContent += "***********************************************************************\r\n"; 
+		codeContent += "*******  bellow nicknames are for WHERE JUST NEED STRT & LENGTH *******\r\n";
+		codeContent += "***********************************************************************\r\n"; 
+		// process reBuild In-Rec layout's sym
+		layoutDataList = (List<Map<String, Object>>) rebInLayout.get("data");
+		startPos = 1;
+		for (Map<String, Object> layoutEntry : layoutDataList) {
+			if (layoutEntry.get("name") != null) {
+				codeContent += "  " + layoutEntry.get("name").toString().trim() + "_S," + startPos + ","
+						+ layoutEntry.get("length") + "\r\n";
+
+				startPos += (int) layoutEntry.get("length");
+			}
+		}
+		buildCode.put("code", codeContent);
+		return buildCode;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> buildSort(Map<String, Object> step, String sortLib) {
+		// -- just ERWIN debug purpose, write out parm
+		//System.out.println("layout received by buildSort is" + step);
+
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process step
+		String sysinName = (String) step.get("name");
+		String stepDesc = (String) step.get("desc");
+		Map<String, Object> sort = (Map<String, Object>) step.get("sort");
+		List<Map<String, Object>> sortFields = (List<Map<String, Object>>) sort.get("fields");
+		Map<String, Object> sum = (Map<String, Object>) step.get("sum");
+		List<Map<String, Object>> sumFields = (List<Map<String, Object>>) sum.get("fields");
+		List<Map<String, Object>> outputList = (List<Map<String, Object>>) step.get("output");
+
+		// prepare buildCode
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		buildCode.put("name", sysinName);
+		buildCode.put("library", sortLib);
+
+		// prepare INREC
+		String inRecFields = "";
+		//System.out.println("receive parm for buildSort = " + step);
+		List<Map<String, Object>> inRecParm = (List<Map<String, Object>>) step.get("inrec");
+		//System.out.println("receive parm for buildSort = " + inRecParm);
+		for (int i = 0; i < inRecParm.size(); i++) {
+			Map<String, Object> inRecEntry = inRecParm.get(i);
+			if (inRecEntry.get("name") != null) {
+				if (i == 0) {
+					inRecFields += "  INREC FIELDS=(";
+				}
+				// System.out.println("current element name = " + inRecEntry.get("name"));
+				inRecFields += inRecEntry.get("mapping").toString().trim()
+						// + ",TO=" + inRecEntry.get("type")
+						// + ",LENGTH=" + inRecEntry.get("length")
+						+ (i < inRecParm.size() - 1 ? "," : ")") + "\r\n";
+				if (i < inRecParm.size() - 1) {
+					inRecFields += "               ";
+				}
+			}
+		}
+		//System.out.println("inRecFields = " + inRecFields);
+
+		// process sortFields
+		String strSortFields = "";
+		for (int i = 0; i < sortFields.size(); i++) {
+			Map<String, Object> sortEntry = sortFields.get(i);
+			if (sortEntry.get("name") != null) {
+				if (i == 0) {
+					strSortFields += "  SORT FIELDS=(";
+				}
+				strSortFields += sortEntry.get("name").toString().trim() + "_B," 
+				               + sortEntry.get("order").toString().substring(0, 1)
+						       + (i < sortFields.size() - 1 ? "," : ")") + "\r\n";
+				if (i < sortFields.size() - 1) {
+					strSortFields += "               ";
+				}
+			}
+		}
+		// -- just ERWIN debug purpose, write out parm
+		//System.out.println("strSortFields = " + strSortFields);
+
+		// process sumFields
+		String strSumFields = "";
+		for (int i = 0; i < sumFields.size(); i++) {
+			Map<String, Object> sumEntry = sumFields.get(i);
+			if (sumEntry.get("name") != null) {
+				if (i == 0) {
+					strSumFields += "  SUM FIELDS=(";
+				}
+				strSumFields += sumEntry.get("name").toString().trim() + "_S" + (i < sumFields.size() - 1 ? "," : ")") + "\r\n";
+				if (i < sumFields.size() - 1) {
+					strSumFields += "              ";
+				}
+			}
+		}
+
+		// process OUTFIL
+		String strOutFilAll = "";
+		for (int i = 0; i < outputList.size(); i++) {
+			Map<String, Object> output = outputList.get(i);
+			String strOutFil = "  OUTFIL FNAMES=OUTFIL" + i + ",\r\n";
+			List<Map<String, Object>> include = (List<Map<String, Object>>) output.get("include");
+			Map<String, Object> layout = (Map<String, Object>) output.get("layout");
+			List<Map<String, Object>> layoutData = (List<Map<String, Object>>) layout.get("data");
+
+			// handle INCLUDE
+			if (include.size() > 0) {
+				for (int j = 0; j < include.size(); j++) {
+					Map<String, Object> incEntry = include.get(j);
+					if (incEntry.get("name") != null) {
+						if (j == 0) {
+							strOutFil += "         INCLUDE(";
+						}
+						strOutFil += incEntry.get("name").toString().trim() + "," + incEntry.get("operand") + "," + "C'"
+								+ incEntry.get("expression") + "'" + (j < include.size() - 1 ? "," : "),") + "\r\n";
+						if (j < include.size() - 1) {
+							strOutFil += "                  ";
+						}
+					}
+				}
+			}
+
+			// handle BUILD
+			for (int j = 0; j < layoutData.size(); j++) {
+				Map<String, Object> layoutEntry = layoutData.get(j);
+				if (layoutEntry.get("name") != null) {
+					if (j == 0) {
+						strOutFil += "         BUILD=(";
+					}
+					int layoutSize = layoutData.stream().filter(item -> item.get("name") != null)
+							.collect(Collectors.toList()).size();
+					strOutFil += layoutEntry.get("mapping").toString().trim() + "_B" + (j < layoutSize - 1 ? "," : ")") + "\r\n";
+					if (j < layoutSize - 1) {
+						strOutFil += "                ";
+					}
+				}
+			}
+			// -- just ERWIN debug purpose, write out parm
+			//System.out.println("strOutFil for BUILD = " + strOutFil);
+
+			strOutFilAll += strOutFil;
+		}
+
+		// build code
+		String codeContent = "";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "* SORT: " + sysinName + "\r\n";
+		codeContent += "* DESC: " + stepDesc + "\r\n";
+		codeContent += "* Generated by iBuild " + currTime + "\r\n";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += inRecFields + strSortFields + strSumFields + strOutFilAll;
+		buildCode.put("code", codeContent);
+
+		return buildCode;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> buildSplit(Map<String, Object> step, String sortLib) {
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process step
+		String sysinName = (String) step.get("name");
+		String stepDesc = (String) step.get("desc");
+		Map<String, Object> splitMap = (Map<String, Object>) step.get("split");
+
+		// prepare buildCode
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		buildCode.put("name", sysinName);
+		buildCode.put("library", sortLib);
+		
+		// get split map
+		String splitType = (String) splitMap.get("type");
+		int fileNumber = (int) splitMap.get("fileNumber");
+		int groupNumber = (int) splitMap.get("groupNumber");
+		String splitKey = (String) splitMap.get("key");
+		List<Map<String, Object>> outputs = (List<Map<String, Object>>) splitMap.get("outputs");
+
+		// generate code 
+		String strSplit = "";
+		if (!"SPLITKEY".equals(splitType)) {
+			for (int n = 0; n < fileNumber; n++) {
+				if (n == 0) {
+					strSplit += "OUTFIL FNAMES=(OUT" + (n + 1) + ",\r\n";		
+				} else if (n == fileNumber - 1) {
+					strSplit += "               OUT" + (n + 1) + ")," + splitType;
+					if (!"SPLIT".equals(splitType)) {
+						strSplit += "=" + groupNumber;
+					}
+					strSplit += "\r\n";
+				} else {
+					strSplit += "               OUT" + (n + 1) + ",\r\n";
+				}
+			}			
+		} else {
+			for (int n = 0; n < outputs.size(); n++) {
+				Map<String, Object> output = (Map<String, Object>) outputs.get(n);
+				String value = (String) output.get("value");
+				strSplit += "OUTFIL FNAMES=OUT" + (n + 1) + ",INCLUDE=(" + splitKey.trim() + ",EQ,C'" + value + "')\r\n";
+			}
+		}
+		
+		// build code
+		String codeContent = "";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "* SORT: " + sysinName + "\r\n";
+		codeContent += "* DESC: " + stepDesc + "\r\n";
+		codeContent += "* Generated by iBuild " + currTime + "\r\n";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "OPTION COPY\r\n";
+		codeContent += strSplit;
+		buildCode.put("code", codeContent);
+
+		return buildCode;
+	}
+
+	public Map<String, Object> buildUnload(Map<String, Object> step, String sortLib) {
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process step
+		String unloadName = (String) step.get("name");
+		String unloadDesc = (String) step.get("desc");
+		String unloadstatements = (String) step.get("statements");
+
+		// prepare DB2UTIL
+		String formattedStatement = "";
+		String[] newuload = unloadstatements.split("\n");
+		for (int i = 0; i < newuload.length; i++) {
+			int length = newuload[i].length();
+			System.out.println(length);
+			if (length < 72) {
+				formattedStatement += newuload[i] + "\r\n";
+			} else {
+				// String[] temp = new String[(newuload[i].length() + 72 - 1) / 72];
+				// for (int j = 0; j < temp.length; j++) {
+				// if (j == temp.length-1) {
+				// temp[j] = newuload[i].substring(j * 72);
+				// formattedStatement += temp[j]+"\r\n";
+				// }else {
+				// temp[j] = newuload[i].substring(j * 72, 72);
+				// formattedStatement += temp[j] + "\r\n";
+				// }
+				// }
+				String newStr = newuload[i];
+				while (true) {
+					int maxLength = newStr.length() > 72 ? 72 : newStr.length();
+					formattedStatement += newStr.substring(0, maxLength - 1) + "\r\n";
+					if (maxLength < newStr.length())
+						newStr = newStr.substring(maxLength);
+					else
+						break;
+				}
+			}
+
+		}
+
+		// prepare buildCode
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		buildCode.put("name", unloadName);
+		buildCode.put("library", sortLib);
+
+		// build code
+		String codeContent = "";
+		codeContent += "--*********************************************************************\r\n";
+		codeContent += "-- NAME: " + unloadName + "\r\n";
+		codeContent += "-- DESC: " + unloadDesc + "\r\n";
+		codeContent += "-- Generated by iBuild " + currTime + "\r\n";
+		codeContent += "--*********************************************************************\r\n";
+		codeContent += formattedStatement;
+		buildCode.put("code", codeContent);
+
+		return buildCode;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> buildLoad(Map<String, Object> step, String lib) {
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process step
+		String loadName = (String) step.get("name");
+		String loadDesc = (String) step.get("desc");
+		
+		// get load param
+		Map<String, Object> loadParam = (Map<String, Object>) step.get("load");
+		// String tblsuff = (String) loadParam.get("tblsuff");
+		String partno = (String) loadParam.get("partno");
+		int discards = (Integer) loadParam.get("discards");
+		boolean replace = (Boolean) loadParam.get("replace");
+		boolean repair = (Boolean) loadParam.get("repair");
+		String charset = (String) loadParam.get("charset");
+		if (charset.equals("UNICODE")) {
+			charset = "UNICODE CCSID(00367,01208,01200)";
+		} else {
+			charset = "EBCDIC  CCSID(00037,00037,00037)";
+		}
+		
+		// determine partno and replace string
+		String replaceStr = "", partnoStr = "";
+		if (partno.equals("")) {
+			if (replace) {
+				replaceStr = "REPLACE";
+			}
+		} else {
+			partnoStr = "PART " + partno;
+			if (replace) {
+				partnoStr += " REPLACE";
+			}
+		}
+		
+		// get table
+		List<Map<String, Object>> refOutputTables = (List<Map<String, Object>>) step.get("refOutputTables");
+		Map<String, Object> table = refOutputTables.get(0);
+		String schema = (String) table.get("schema");
+		String tableName = (String) table.get("name");
+		List<Map<String, Object>> columnList = (List<Map<String, Object>>) table.get("layout");
+		
+		// prepare DB2UTIL
+		String ddl = "";
+		ddl += "LOAD DATA INDDN SYSREC LOG NO  DISCARDS " + discards + " " + replaceStr + "\r\n";
+		ddl += "  " + charset + "\r\n";
+		ddl += "  INTO TABLE \"" + schema + "\".\"" + tableName + "\"\r\n";
+		if (!partnoStr.equals("")) {
+			ddl += "  " + partnoStr + "\r\n";
+		}
+		ddl += "  (\r\n";
+		int currentLength = 1;
+		int i = 1;
+		for (Map<String, Object> entry : columnList) {
+			String colName = entry.get("NAME").toString().trim();
+			String colType = entry.get("COLTYPE").toString().trim();
+			int colLength = Integer.parseInt(entry.get("LENGTH").toString().trim());
+			String colNullable = entry.get("NULLS").toString().trim();
+
+			if ("CHAR".equals(colType)) {
+				colType = "CHAR(" + colLength + ")";
+			} else if ("DATE".equals(colType)) {
+				colType = "DATE EXTERNAL(10)";
+				colLength = 10;
+			} else if ("TIMESTMP".equals(colType)) {
+				colType = "TIMESTAMP EXTERNAL(26)";
+				colLength = 26;
+			} else if ("BIGINT".equals(colType)) {
+				colLength = 8;
+			} else if ("INTEGER".equals(colType)) {
+				colLength = 4;
+			} else if ("DECIMAL".equals(colType)) {
+				colLength = (colLength + 1) / 2;
+			} else if ("VARCHAR".equals(colType)) {
+			} else {
+				colType = colType + "(" + colLength + ")";
+			}
+
+			ddl += "       " + colName + "  POSITION(" + currentLength + ")\r\n";
+			ddl += "         " + colType;
+
+			currentLength += colLength;
+
+			if ("Y".equals(colNullable)) {
+				ddl += "\r\n";
+				ddl += "         NULLIF(" + currentLength + ")='?'";
+				currentLength++;
+			}
+
+			if (i == columnList.size()) {
+				ddl += "\r\n";
+				ddl += "  )\r\n";
+			} else {
+				ddl += ",\r\n";
+			}
+
+			i++;
+		}
+		if (repair) {
+			// ddl += " REPAIR OBJECT LOG NO\r\n";
+			// ddl += " SET TABLESPACE " + dbname + "." + tsname + "\r\n";
+			// ddl += " NOCOPYPEND\r\n";
+		}
+
+		// prepare buildCode
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		buildCode.put("name", loadName);
+		buildCode.put("library", lib);
+
+		// build code
+		String codeContent = "";
+		codeContent += "--*********************************************************************\r\n";
+		codeContent += "-- NAME: " + loadName + "\r\n";
+		codeContent += "-- DESC: " + loadDesc + "\r\n";
+		codeContent += "-- Generated by iBuild " + currTime + "\r\n";
+		codeContent += "--*********************************************************************\r\n";
+		codeContent += ddl;
+		buildCode.put("code", codeContent);
+
+		return buildCode;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> buildJoin(Map<String, Object> step, String sortLib) {
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process step
+		String sysinName = (String) step.get("name");
+		String stepDesc = (String) step.get("desc");
+		List<Map<String, Object>> inputList = (List<Map<String, Object>>) step.get("input");
+		List<Map<String, Object>> outputList = (List<Map<String, Object>>) step.get("output");
+
+		// prepare buildCode
+		Map<String, Object> buildCode = new HashMap<String, Object>();
+		buildCode.put("name", sysinName);
+		buildCode.put("library", sortLib);
+
+		// process joinFields
+		String strJoinFields = "", unpairedF1 = "", unpairedF2 = "";
+		List<Map<String, Object>> layoutDataF1 = new ArrayList<Map<String, Object>>(),
+				layoutDataF2 = new ArrayList<Map<String, Object>>();
+		for (int i = 0; i < inputList.size(); i++) {
+			Map<String, Object> inputEntry = inputList.get(i);
+			if (inputEntry.get("joinfile") != null) {
+				// handle option
+				Map<String, Object> option = (Map<String, Object>) inputEntry.get("options");
+				String sorted = (boolean) option.get("sorted") ? ",SORTED" : "";
+				String noseqck = (boolean) option.get("noseqck") ? ",NOSEQCK" : "";
+				String unpaired = (boolean) option.get("unpaired")
+						? "," + inputEntry.get("joinfile").toString().substring(2)
+						: "";
+				// handle layout
+				Map<String, Object> layout = (Map<String, Object>) inputEntry.get("layout");
+				List<Map<String, Object>> layoutData = (List<Map<String, Object>>) layout.get("data");
+				// store layoutData
+				if ("JNF1".equals((String) inputEntry.get("joinfile"))) {
+					layoutDataF1 = layoutData;
+				} else if ("JNF2".equals((String) inputEntry.get("joinfile"))) {
+					layoutDataF2 = layoutData;
+				}
+				// filter keys
+				layoutData = layoutData.stream()
+						.filter(item -> (item.get("joinkey") != null && (boolean) item.get("joinkey")))
+						.collect(Collectors.toList());
+				for (int j = 0; j < layoutData.size(); j++) {
+					Map<String, Object> fieldEntry = layoutData.get(j);
+					if (j == 0) {
+						strJoinFields += "  JOINKEYS FILE=" + inputEntry.get("joinfile").toString().substring(2)
+								+ ",FIELDS=(";
+					}
+					strJoinFields += fieldEntry.get("name") + ",A" + (j < layoutData.size() - 1 ? ",\r\n" : ")");
+					if (j < layoutData.size() - 1) {
+						strJoinFields += "               ";
+					} else {
+						if (!sorted.isEmpty()) {
+							strJoinFields += sorted;
+						}
+						if (!noseqck.isEmpty()) {
+							strJoinFields += noseqck;
+						}
+						if (!unpaired.isEmpty()) {
+							if ("JNF1".equals((String) inputEntry.get("joinfile"))) {
+								unpairedF1 = unpaired;
+							} else if ("JNF2".equals((String) inputEntry.get("joinfile"))) {
+								unpairedF2 = unpaired;
+							}
+						}
+						strJoinFields += "\r\n";
+					}
+				}
+			}
+		}
+
+		// process JOIN UNPAIRED
+		String strJoinUnpaired = "";
+		if (!unpairedF1.isEmpty() || !unpairedF2.isEmpty()) {
+			strJoinUnpaired += "  JOIN UNPAIRED" + unpairedF1 + unpairedF2 + "\r\n";
+		}
+
+		// process reformatFields
+		String strReformatFields = "";
+		// process layoutDataF1
+		layoutDataF1 = layoutDataF1.stream().filter(item -> (item.get("name") != null)).collect(Collectors.toList());
+		for (int j = 0; j < layoutDataF1.size(); j++) {
+			Map<String, Object> fieldEntry = layoutDataF1.get(j);
+			if (j == 0) {
+				strReformatFields += "  REFORMAT FIELDS=(";
+			}
+			strReformatFields += "F1:" + fieldEntry.get("name") + "," + "\r\n";
+			strReformatFields += "               ";
+		}
+		// process layoutDataF2
+		layoutDataF2 = layoutDataF2.stream().filter(item -> (item.get("name") != null)).collect(Collectors.toList());
+		for (int j = 0; j < layoutDataF2.size(); j++) {
+			Map<String, Object> fieldEntry = layoutDataF2.get(j);
+			strReformatFields += "F2:" + fieldEntry.get("name") + "," + "\r\n";
+			strReformatFields += "               ";
+			if (j == layoutDataF2.size() - 1) {
+				strReformatFields += "?)\r\n";
+			}
+		}
+
+		// process OPTION COPY
+		String strOptionCopy = "  OPTION COPY\r\n";
+
+		// process OUTFIL
+		String strOutFilAll = "";
+		for (int i = 0; i < outputList.size(); i++) {
+			Map<String, Object> output = outputList.get(i);
+			String strOutFil = "  OUTFIL FNAMES=OUTFIL" + i + ",\r\n";
+			List<Map<String, Object>> include = (List<Map<String, Object>>) output.get("include");
+			Map<String, Object> layout = (Map<String, Object>) output.get("layout");
+			List<Map<String, Object>> layoutData = (List<Map<String, Object>>) layout.get("data");
+			// handle INCLUDE
+			for (int j = 0; j < include.size(); j++) {
+				Map<String, Object> incEntry = include.get(j);
+				if (incEntry.get("name") != null) {
+					// search name
+					String name = (String) incEntry.get("name");
+					for (Map<String, Object> inputEntry : inputList) {
+						if (inputEntry.get("joinfile") != null) {
+							Map<String, Object> srchLayout = (Map<String, Object>) inputEntry.get("layout");
+							List<Map<String, Object>> srchLayoutData = (List<Map<String, Object>>) srchLayout
+									.get("data");
+							for (Map<String, Object> srchLayoutItem : srchLayoutData) {
+								if (name.equals((String) srchLayoutItem.get("name"))) {
+									name = inputEntry.get("joinfile") + "_" + name;
+									break;
+								}
+							}
+						}
+					}
+					// combine the sort card
+					if (j == 0) {
+						strOutFil += "         INCLUDE(";
+					}
+					strOutFil += name + "," + incEntry.get("operand") + "," + "C'" + incEntry.get("expression") + "'"
+							+ (j < include.size() - 1 ? "," : "),") + "\r\n";
+					if (j < include.size() - 1) {
+						strOutFil += "                  ";
+					}
+				}
+			}
+			// handle BUILD
+			for (int j = 0; j < layoutData.size(); j++) {
+				Map<String, Object> layoutEntry = layoutData.get(j);
+				if (layoutEntry.get("name") != null) {
+					// search name
+					String name = (String) layoutEntry.get("name");
+					for (Map<String, Object> inputEntry : inputList) {
+						if (inputEntry.get("joinfile") != null) {
+							Map<String, Object> srchLayout = (Map<String, Object>) inputEntry.get("layout");
+							List<Map<String, Object>> srchLayoutData = (List<Map<String, Object>>) srchLayout
+									.get("data");
+							for (Map<String, Object> srchLayoutItem : srchLayoutData) {
+								if (name.equals((String) srchLayoutItem.get("name"))) {
+									name = inputEntry.get("joinfile") + "_" + name;
+									break;
+								}
+							}
+						}
+					}
+					// combine the sort card
+					if (j == 0) {
+						strOutFil += "         BUILD=(";
+					}
+					int layoutSize = layoutData.stream().filter(item -> item.get("name") != null)
+							.collect(Collectors.toList()).size();
+					strOutFil += name + (j < layoutSize - 1 ? "," : ")") + "\r\n";
+					if (j < layoutSize - 1) {
+						strOutFil += "                ";
+					}
+				}
+			}
+
+			// combine OUTFIL
+			strOutFilAll += strOutFil;
+		}
+
+		// build code
+		String codeContent = "";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += "* SORT: " + sysinName + "\r\n";
+		codeContent += "* DESC: " + stepDesc + "\r\n";
+		codeContent += "* Generated by iBuild " + currTime + "\r\n";
+		codeContent += "***********************************************************************\r\n";
+		codeContent += strJoinFields + strJoinUnpaired + strReformatFields + strOptionCopy + strOutFilAll;
+		buildCode.put("code", codeContent);
+
+		return buildCode;
+	}
+
+	@SuppressWarnings({ "unchecked", "unused" })
+	@Override
+	public Map<String, Object> buildJob(List<Map<String, Object>> steps, Map<String, Object> properties,
+			List<String> participants) {
+		// build() variables
+		Map<String, Object> buildResult = new HashMap<String, Object>();
+		List<Map<String, Object>> buildCodeList = new ArrayList<Map<String, Object>>();
+
+		// get system time
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = df.format(day);
+
+		// process lib mappings
+		String jobLib = "JOB", jobLibSym = "JOB";
+		String sortLib = "SORT", sortLibSym = "SORT";
+		String db2Lib = "DB2UTIL", db2LibSym = "DB2UTIL";
+		for (Map<String, Object> libMapping : (List<Map<String, Object>>) properties.get("libMappings")) {
+			if ("JOB".equals(libMapping.get("codeType"))) {
+				jobLib = (String) libMapping.get("codeLib");
+				jobLibSym = (String) libMapping.get("codeLibSym");
+			} else if ("SORT".equals(libMapping.get("codeType"))) {
+				sortLib = (String) libMapping.get("codeLib");
+				sortLibSym = (String) libMapping.get("codeLibSym");
+			} else if ("UNLOAD".equals(libMapping.get("codeType"))) {
+				db2Lib = (String) libMapping.get("codeLib");
+				db2LibSym = (String) libMapping.get("codeLibSym");
+			} else if ("LOAD".equals(libMapping.get("codeType"))) {
+				db2Lib = (String) libMapping.get("codeLib");
+				db2LibSym = (String) libMapping.get("codeLibSym");
+			}
+		}
+
+		// process JCL
+		String jobName = (String) properties.get("jobName");
+		Map<String, Object> buildJCL = new HashMap<String, Object>();
+		buildJCL.put("name", jobName);
+		buildJCL.put("library", jobLib);
+		String jclCode = "", sysinName = "", symName = "", symName2 = "", symName3 = "";
+
+		// process JCL header
+		jclCode += "//" + properties.get("jobName") + " JOB (IBUILD,V1),'" + properties.get("jobName") + "',\r\n";
+		jclCode += "//         USER=" + properties.get("jobUser") + ",MSGCLASS=" + properties.get("jobMessage")
+				+ ",TIME=" + properties.get("jobTime") + ",REGION=" + properties.get("jobRegion") + "\r\n";
+		jclCode += "//        JCLLIB ORDER=(" + properties.get("jobLib") + ")\r\n";
+		jclCode += "//*\r\n";
+
+		// process JCL includes
+		for (Map<String, Object> jobInclude : (List<Map<String, Object>>) properties.get("jobIncludes")) {
+			String name = (String) jobInclude.get("name");
+			jclCode += "//" + name + "   INCLUDE MEMBER=" + name + "\r\n";
+		}
+		jclCode += "//*\r\n";
+
+		// process JCL symbolics
+		for (Map<String, Object> jobSym : (List<Map<String, Object>>) properties.get("jobSymbolics")) {
+			String name = (String) jobSym.get("symName");
+			String value = (String) jobSym.get("symValue");
+			jclCode += "//         SET " + name + "=" + value + "\r\n";
+		}
+		jclCode += "//*\r\n";
+
+		// process job description
+		jclCode += "//*********************************************************************\r\n";
+		jclCode += "//* Generated by iBuild " + currTime + "\r\n";
+		jclCode += "//*********************************************************************\r\n";
+		jclCode += "//* " + properties.get("jobDesc") + "\r\n";
+
+		// process change history
+		jclCode += "//*********************************************************************\r\n";
+		jclCode += "//*                       CHANGE HISTORY                              *\r\n";
+		jclCode += "//*-------------------------------------------------------------------*\r\n";
+		jclCode += "//*DATE    |REQ#    |AUTHOR  |COMMENTS                                *\r\n";
+		jclCode += "//*--------|--------|--------|----------------------------------------*\r\n";
+		for (Map<String, Object> changeHist : (List<Map<String, Object>>) properties.get("changeHistory")) {
+			String date = (String) changeHist.get("date");
+			String req = (String) changeHist.get("requirement");
+			while (req.length() < 8) {
+				req += " ";
+			}
+			String author = (String) changeHist.get("author");
+			while (author.length() < 8) {
+				author += " ";
+			}
+			String comment = (String) changeHist.get("description");
+			while (comment.length() < 40) {
+				comment += " ";
+			}
+			jclCode += "//*" + date + "|" + req + "|" + author + "|" + comment + "*" + "\r\n";
+		}
+		jclCode += "//*********************************************************************\r\n";
+		jclCode += "//*\r\n";
+
+		// process JCL header
+		String jclHeader = (String) properties.get("jclHeader");
+		if (!"".equals(jclHeader)) {
+			jclHeader = jclHeader.replaceAll("#JOBNAME#", jobName);
+			jclCode += jclHeader + "\r\n";
+		}
+
+		// Generate members for each step
+		for (int stepIndex = 0; stepIndex < steps.size(); stepIndex++) {
+			Map<String, Object> step = steps.get(stepIndex);
+			// Process common JCL
+			String stepName = "STEP" + String.format("%03d", (stepIndex + 1) * 10);
+			String stepDesc = (String) step.get("longDesc");
+			if (stepDesc == null || stepDesc.isEmpty()) {
+				stepDesc = (String) step.get("desc");
+			}
+			String condCode = (String) step.get("condCode");
+			if (!"".equals(condCode)) {
+				condCode = ",COND=" + condCode;
+			}
+			jclCode += "//*********************************************************************\r\n";
+			jclCode += "//* " + stepName + ": " + stepDesc + "\r\n";
+			jclCode += "//*********************************************************************\r\n";
+			// Handle each activity type
+			if ("IEFBR14".equals(step.get("activityType").toString())) {
+				// process JCL
+				jclCode += "//" + stepName + " EXEC PGM=IEFBR14\r\n";
+				// process each file
+				List<Map<String, Object>> fileList = (List<Map<String, Object>>) step.get("files");
+				for (int i = 0; i < fileList.size(); i++) {
+					Map<String, Object> fileMap = fileList.get(i);
+					// get file name from outputNode
+					String fileName = (String) fileMap.get("name");
+					Map<String, Object> dispMap = (Map<String, Object>) fileMap.get("disp");
+					String dispPri = (String) dispMap.get("pri");
+					String dispSec = (String) dispMap.get("sec");
+					String dispThd = (String) dispMap.get("thd");
+					String dispStr = dispPri;
+					if (!"".equals(dispSec)) {
+						dispStr += "," + dispSec;
+					}
+					if (!"".equals(dispThd)) {
+						dispStr += "," + dispThd;
+					}
+					String spaceName = (String) fileMap.get("space");
+					// prepare JCL
+					jclCode += "//FILE" + String.format("%03d", i + 1) + "   DD DSN=" + fileName + ",\r\n";
+					jclCode += "//       DISP=(" + dispStr + "),\r\n";
+					jclCode += "//       SPACE=" + spaceName + "\r\n";
+				}
+			} else if ("PROC".equals(step.get("activityType").toString())) {
+				// get procedure name
+				String procName = (String) step.get("name");
+				List<Map<String, Object>> paramList = (List<Map<String, Object>>) step.get("parameters");
+				String comma = paramList.size() > 0 ? "," : "";
+				// process JCL
+				jclCode += "//" + stepName + " EXEC " + procName + condCode + comma + "\r\n";
+				for (int i = 0; i < paramList.size(); i++) {
+					Map<String, Object> param = paramList.get(i);
+					String key = (String) param.get("key");
+					String value = (String) param.get("value");
+					String commaParam = i < paramList.size() - 1 ? "," : "";
+					jclCode += "//             " + key + "=" + value + commaParam + "\r\n";
+				}
+			} else if ("SORT".equals(step.get("activityType").toString())) {
+				// process JCL
+				jclCode += "//" + stepName + " EXEC PGM=SORT" + condCode + "\r\n";
+				jclCode += "//SYSPRINT  DD SYSOUT=*\r\n";
+				jclCode += "//SYSOUT    DD SYSOUT=*\r\n";
+
+				// process SYSIN
+				Map<String, Object> buildCodeSort = buildSort(step, sortLib);
+				buildCodeList.add(buildCodeSort);
+				// get sysinName
+				sysinName = (String) buildCodeSort.get("name");
+
+				// process SYSNAMES
+				List<Map<String, Object>> inrecLayout = (List<Map<String, Object>>) step.get("inrec");
+				Map<String, Object> inrecLayoutM = new HashMap<String, Object>();
+				inrecLayoutM.put("data", inrecLayout);
+				List<Map<String, Object>> inputNodeList = (List<Map<String, Object>>) step.get("input");
+				for (Map<String, Object> inputNode : inputNodeList) {
+					// get file name from inputNode
+					String fileName = (String) inputNode.get("name");
+					jclCode += "//SORTIN   DD DSN=" + fileName + ",DISP=SHR\r\n";
+					// get layout from inputNode
+					Map<String, Object> layout = (Map<String, Object>) inputNode.get("layout");
+
+					// -- just ERWIN debug purpose, write out parm
+					//System.out.println("layout passed to buildSym is :" + layout);
+					//System.out.println("INPUT Jason is :" + inputNode);
+					//System.out.println("Full Jason is :" + step);
+					//System.out.println("full Jason might be :" + step);
+
+					Map<String, Object> buildCode = buildSymErw(layout, inrecLayoutM, sortLib);
+					// Map<String, Object> buildCode = buildSym(layout, sortLib);
+					buildCodeList.add(buildCode);
+					// get symName
+					symName = (String) buildCode.get("name");
+				}
+
+				// process JCL
+				// handle SORTOUT
+				List<Map<String, Object>> outputNodeList = (List<Map<String, Object>>) step.get("outputNodes");
+				for (int i = 0; i < outputNodeList.size(); i++) {
+					Map<String, Object> outputNode = outputNodeList.get(i);
+					// get file name from outputNode
+					String fileName = (String) outputNode.get("name");
+					Map<String, Object> dispMap = (Map<String, Object>) outputNode.get("disp");
+					String dispPri = (String) dispMap.get("pri");
+					String dispSec = (String) dispMap.get("sec");
+					String dispThd = (String) dispMap.get("thd");
+					String dispStr = dispPri;
+					if (!"".equals(dispSec)) {
+						dispStr += "," + dispSec;
+					}
+					if (!"".equals(dispThd)) {
+						dispStr += "," + dispThd;
+					}
+					String spaceName = "&" + (String) outputNode.get("space");
+					String unitName = "&" + (String) outputNode.get("unit");
+					// prepare JCL
+					jclCode += "//OUTFIL" + i + "   DD DSN=" + fileName + ",\r\n";
+					jclCode += "//       DISP=(" + dispStr + "),\r\n";
+					jclCode += "//       SPACE=" + spaceName + ",UNIT=" + unitName + "\r\n";
+				}
+
+				// handle the others
+				jclCode += "//SYSIN    DD DSN=" + sortLibSym + "(" + sysinName + "),DISP=SHR\r\n";
+				jclCode += "//SYMNAMES DD DSN=" + sortLibSym + "(" + symName + "),DISP=SHR\r\n";
+			} else if ("JOIN".equals(step.get("activityType").toString())) {
+				// process JCL
+				jclCode += "//" + stepName + " EXEC PGM=SORT" + condCode + "\r\n";
+				jclCode += "//SYSPRINT  DD SYSOUT=*\r\n";
+				jclCode += "//SYSOUT    DD SYSOUT=*\r\n";
+
+				// process SYSIN
+				Map<String, Object> buildCodeJoin = buildJoin(step, sortLib);
+				buildCodeList.add(buildCodeJoin);
+				// get sysinName
+				sysinName = (String) buildCodeJoin.get("name");
+
+				// process SYMNAMES
+				List<Map<String, Object>> layoutData = null;
+				List<Map<String, Object>> layoutData2 = null;
+				List<Map<String, Object>> inputNodeList = (List<Map<String, Object>>) step.get("input");
+				for (Map<String, Object> inputNode : inputNodeList) {
+					// get file name from inputNode
+					String fileName = (String) inputNode.get("name");
+					jclCode += "//SORT" + inputNode.get("joinfile") + "   DD DSN=" + fileName + ",DISP=SHR\r\n";
+					// get layout from inputNode
+					Map<String, Object> layout = (Map<String, Object>) inputNode.get("layout");
+					Map<String, Object> buildCode = buildSym(layout, sortLib);
+					buildCodeList.add(buildCode);
+					// get symName
+					if ("JNF1".equals((String) inputNode.get("joinfile"))) {
+						symName = (String) buildCode.get("name");
+						layoutData = (List<Map<String, Object>>) layout.get("data");
+					} else if ("JNF2".equals((String) inputNode.get("joinfile"))) {
+						symName2 = (String) buildCode.get("name");
+						layoutData2 = (List<Map<String, Object>>) layout.get("data");
+					}
+				}
+
+				// process SYMNAMES for reformat
+				Map<String, Object> layout = new HashMap<String, Object>();
+				layout.put("name", "SYM" + jobName.substring(jobName.length() - 3) + (stepIndex + 1));
+				// reformat layoutData
+				for (Map<String, Object> layoutItem : layoutData) {
+					if (layoutItem.get("name") != null) {
+						String name = "JNF1_" + layoutItem.get("name");
+						layoutItem.put("name", name);
+					}
+				}
+				// reformat layoutData2
+				for (Map<String, Object> layoutItem : layoutData2) {
+					if (layoutItem.get("name") != null) {
+						String name = "JNF2_" + layoutItem.get("name");
+						layoutItem.put("name", name);
+					}
+				}
+				// merge layoutData and layoutData2
+				layoutData.addAll(layoutData2);
+				// add joinMarker
+				Map<String, Object> joinMarker = new HashMap<String, Object>();
+				joinMarker.put("name", "JOIN_MARKER");
+				joinMarker.put("type", "CH");
+				joinMarker.put("length", 1);
+				layoutData.add(joinMarker);
+				// put to layout
+				layout.put("data", layoutData);
+				// build code
+				Map<String, Object> buildCode = buildSym(layout, sortLib);
+				buildCodeList.add(buildCode);
+				symName3 = (String) buildCode.get("name");
+
+				// process JCL
+				// handle SORTOUT
+				List<Map<String, Object>> outputNodeList = (List<Map<String, Object>>) step.get("outputNodes");
+				for (int i = 0; i < outputNodeList.size(); i++) {
+					Map<String, Object> outputNode = outputNodeList.get(i);
+					// get file name from outputNode
+					String fileName = (String) outputNode.get("name");
+					Map<String, Object> dispMap = (Map<String, Object>) outputNode.get("disp");
+					String dispPri = (String) dispMap.get("pri");
+					String dispSec = (String) dispMap.get("sec");
+					String dispThd = (String) dispMap.get("thd");
+					String dispStr = dispPri;
+					if (!"".equals(dispSec)) {
+						dispStr += "," + dispSec;
+					}
+					if (!"".equals(dispThd)) {
+						dispStr += "," + dispThd;
+					}
+					String spaceName = "&" + (String) outputNode.get("space");
+					String unitName = "&" + (String) outputNode.get("unit");
+					// prepare JCL
+					jclCode += "//OUTFIL" + i + "   DD DSN=" + fileName + ",\r\n";
+					jclCode += "//       DISP=(" + dispStr + "),\r\n";
+					jclCode += "//       SPACE=" + spaceName + ",UNIT=" + unitName + "\r\n";
+				}
+
+				// handle the others
+				jclCode += "//SYSIN    DD DSN=" + sortLibSym + "(" + sysinName + "),DISP=SHR\r\n";
+				jclCode += "//SYMNAMES DD DSN=" + sortLibSym + "(" + symName + "),DISP=SHR\r\n";
+				jclCode += "//         DD DSN=" + sortLibSym + "(" + symName2 + "),DISP=SHR\r\n";
+				jclCode += "//         DD DSN=" + sortLibSym + "(" + symName3 + "),DISP=SHR\r\n";
+			} else if ("SPLIT".equals(step.get("activityType").toString())) {
+				// process JCL
+				jclCode += "//" + stepName + " EXEC PGM=SORT" + condCode + "\r\n";
+				jclCode += "//SYSPRINT  DD SYSOUT=*\r\n";
+				jclCode += "//SYSOUT    DD SYSOUT=*\r\n";
+				
+				// get split map
+				Map<String, Object> splitMap = (Map<String, Object>) step.get("split");
+				String splitType = (String) splitMap.get("type");
+
+				// process SYSIN
+				Map<String, Object> buildCodeSplit = buildSplit(step, sortLib);
+				buildCodeList.add(buildCodeSplit);
+				// get sysinName
+				sysinName = (String) buildCodeSplit.get("name");
+
+				// process SYSNAMES
+				List<Map<String, Object>> inputNodeList = (List<Map<String, Object>>) step.get("inputNodes");
+				for (Map<String, Object> inputNode : inputNodeList) {
+					// get file name from inputNode
+					String fileName = (String) inputNode.get("name");
+					jclCode += "//SORTIN   DD DSN=" + fileName + ",DISP=SHR\r\n";
+					// get layout from inputNode
+					if ("SPLITKEY".equals(splitType)) {
+						Map<String, Object> layout = (Map<String, Object>) inputNode.get("layout");
+						Map<String, Object> buildCode = buildSym(layout, sortLib);
+						buildCodeList.add(buildCode);
+						// get symName
+						symName = (String) buildCode.get("name");
+					}
+				}
+
+				// process JCL				
+				// handle SORTOUT
+				List<Map<String, Object>> outputNodeList = (List<Map<String, Object>>) step.get("outputNodes");
+				Map<String, Object> outputNode = outputNodeList.get(0);
+				// get file name from outputNode
+				String fileName = (String) outputNode.get("name");
+				Map<String, Object> dispMap = (Map<String, Object>) outputNode.get("disp");
+				String dispPri = (String) dispMap.get("pri");
+				String dispSec = (String) dispMap.get("sec");
+				String dispThd = (String) dispMap.get("thd");
+				String dispStr = dispPri;
+				if (!"".equals(dispSec)) {
+					dispStr += "," + dispSec;
+				}
+				if (!"".equals(dispThd)) {
+					dispStr += "," + dispThd;
+				}
+				String spaceName = "&" + (String) outputNode.get("space");
+				String unitName = "&" + (String) outputNode.get("unit");
+				
+				// get output file names
+				List<String> splitOutputs = new ArrayList<String>();
+				if (!splitType.equals("SPLITKEY")) {
+					int splitNumber = (int) splitMap.get("fileNumber");
+					if (fileName.indexOf("*") < 0) {
+						fileName += "*";
+					}
+					for (int n = 0; n < splitNumber; n++) {
+						splitOutputs.add(fileName.replaceAll("\\*", Integer.toString(n))); 
+					}
+				} else {
+					List<Map<String, Object>> outputs = (List<Map<String, Object>>) splitMap.get("outputs");
+					for (Map<String, Object> output : outputs) {
+						splitOutputs.add((String) output.get("filename"));
+					}
+				}
+				
+				// prepare JCL
+				for (int seq = 0; seq < splitOutputs.size(); seq++) {
+					jclCode += "//OUT" + (seq + 1) + "   DD DSN=" + splitOutputs.get(seq) + ",\r\n";
+					jclCode += "//       DISP=(" + dispStr + "),\r\n";
+					jclCode += "//       SPACE=" + spaceName + ",UNIT=" + unitName + "\r\n";
+				}
+
+				// handle the others
+				jclCode += "//SYSIN    DD DSN=" + sortLibSym + "(" + sysinName + "),DISP=SHR\r\n";
+				if ("SPLITKEY".equals(splitType)) {
+					jclCode += "//SYMNAMES DD DSN=" + sortLibSym + "(" + symName + "),DISP=SHR\r\n";
+				}
+			} else if ("UNLOAD".equals(step.get("activityType").toString())) {
+				Map<String, Object> buildCodeUnload = buildUnload(step, db2Lib);
+				buildCodeList.add(buildCodeUnload);
+
+				// get unloadname
+				sysinName = (String) buildCodeUnload.get("name");
+
+				String fileName = "";
+				String spaceName = "";
+				String unitName = "";
+				String dispStr = "";
+				List<Map<String, Object>> outputNodeList = (List<Map<String, Object>>) step.get("outputNodes");
+				for (int i = 0; i < outputNodeList.size(); i++) {
+					Map<String, Object> outputNode = outputNodeList.get(i);
+					// get file name from outputNode
+					fileName = (String) outputNode.get("name");
+					spaceName = "&" + (String) outputNode.get("space");
+					unitName = "&" + (String) outputNode.get("unit");
+					Map<String, Object> dispMap = (Map<String, Object>) outputNode.get("disp");
+					String dispPri = (String) dispMap.get("pri");
+					String dispSec = (String) dispMap.get("sec");
+					String dispThd = (String) dispMap.get("thd");
+					dispStr = dispPri;
+					if (!"".equals(dispSec)) {
+						dispStr += "," + dispSec;
+					}
+					if (!"".equals(dispThd)) {
+						dispStr += "," + dispThd;
+					}
+				}
+
+				// process JCL
+				jclCode += "//             SET MBR=" + sysinName + "\r\n";
+				jclCode += "//             SET ULDSSUF=DUMMY" + "\r\n";
+				jclCode += "//" + stepName + " EXEC FMSUTBLE" + condCode + "\r\n";
+				jclCode += "//STEP040.SYSREC00 DD DSN=" + fileName + ",\r\n";
+				jclCode += "//       SPACE=" + spaceName + ",UNIT=" + unitName + "\r\n";
+				jclCode += "//       DISP=(" + dispStr + ")\r\n";
+
+				// Map<String, Object> buildCodeUnload = buildUnload(step, sortLib);
+				// buildCodeList.add(buildCodeUnload);
+			} else if ("LOAD".equals(step.get("activityType").toString())) {
+				Map<String, Object> buildCodeLoad = buildLoad(step, db2Lib);
+				buildCodeList.add(buildCodeLoad);
+
+				// get unloadname
+				sysinName = (String) buildCodeLoad.get("name");
+				
+				// get input file
+				List<Map<String, Object>> inputNodeList = (List<Map<String, Object>>) step.get("inputNodes");
+				Map<String, Object> inputNode = inputNodeList.get(0);
+				// get file name from outputNode
+				String fileName = (String) inputNode.get("name");
+				
+				// build JCL
+				Map<String, Object> loadParam = (Map<String, Object>) step.get("load");
+				String tblsuff = (String) loadParam.get("tblsuff");
+				String partno = (String) loadParam.get("partno");
+
+				// process JCL
+				jclCode += "//             SET TBLSUFF=" + tblsuff + "\r\n";
+				jclCode += "//             SET PARTNO=" + partno + "\r\n";
+				jclCode += "//" + stepName + " EXEC FMSLTBLE" + condCode + "\r\n";
+				jclCode += "//STEP00E.SYSIN  DD DSN=" + db2LibSym + "(" + sysinName + "),DISP=SHR\r\n";
+				jclCode += "//STEP030.SYSREC DD DSN=" + fileName + ",\r\n";
+				jclCode += "//       DISP=SHR\r\n";
+			}
+
+			// mark the end of the current step
+			jclCode += "//*\r\n";
+		}
+
+		// process JCL trailer
+		String jclTrailer = (String) properties.get("jclTrailer");
+		if (!"".equals(jclTrailer)) {
+			jclTrailer = jclTrailer.replaceAll("#JOBNAME#", jobName);
+			jclCode += jclTrailer + "\r\n";
+		}
+
+		// add buildJCL
+		buildJCL.put("code", jclCode);
+		buildCodeList.add(buildJCL);
+
+		// remove duplication from buildCodeList
+		for (int i = 0; i < buildCodeList.size() - 1; i++) {
+			for (int j = buildCodeList.size() - 1; j > i; j--) {
+				if (buildCodeList.get(j).get("name").equals(buildCodeList.get(i).get("name"))
+						&& buildCodeList.get(j).get("library").equals(buildCodeList.get(i).get("library"))) {
+					buildCodeList.remove(j);
+				}
+			}
+		}
+
+		// save the generated code
+		CodeUtil codeUtil = new CodeUtil();
+		codeUtil.saveCode((String) properties.get("jobId"), buildCodeList);
+
+		// return build result
+		buildResult.put("status", "success");
+		buildResult.put("code", buildCodeList);
+		return buildResult;
+	}
+
+	@Override
+	public Map<String, Object> getObject(String objId, String uniqueKey) {
+		return buildDao.getObject(objId, uniqueKey);
+	}
+
+	@Override
+	public Map<String, Object> getObjectHistory(String objId) {
+		return buildDao.getObjectHistory(objId);
+	}
+
+	@Override
+	public Map<String, Object> makeObjectCurrent(String objId, String uniqueKey, int userId) {
+		return buildDao.makeObjectCurrent(objId, uniqueKey, userId);
+	}
+
+	@Override
+	public Map<String, Object> searchJobs(String queryString, String envCode) {
+		return buildDao.searchJobs(queryString, envCode);
+	}
+
+	@Override
+	public Map<String, Object> getRecentJobs(String envCode) {
+		return buildDao.getRecentJobs(envCode);
+	}
+
+	@Override
+	public Map<String, Object> getLayoutList(String params) {
+		return buildDao.getLayoutList(params);
+	}
+
+	@Override
+	public Map<String, Object> getLayout(String params) {
+		return buildDao.getLayout(params);
+	}
+
+	@Override
+	public Map<String, Object> saveLayout(Map<String, Object> params) {
+		// buildDao.cleanLayout(?);
+
+		// just ERWIN debug purpose
+		// System.out.println("received layout = " + params.get("layout"));
+
+		// Map<String, Object> resultMap = new HashMap<String, Object>();
+		// return resultMap;
+
+		return buildDao.saveLayout(params);
+	}
+	
+	@Override
+	public Map<String, Object> getTableList(String schema, String queryTable) {
+		Map<String, Object> data = new HashMap<String, Object>();
+		List<Map<String, Object>> tableList = buildDao.getTableList(schema, queryTable);
+		data.put("data", tableList);
+		return data;
+	}
+	
+	@Override
+	public Map<String, Object> getTableColumnList(String schema, String queryTable) {
+		Map<String, Object> data = new HashMap<String, Object>();
+		List<Map<String, Object>> tableColumnList = buildDao.getTableColumnList(schema, queryTable);
+		data.put("data", tableColumnList);
+		return data;
+	}
+
+}

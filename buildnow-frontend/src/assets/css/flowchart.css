@@ -1,0 +1,248 @@
+g {
+  cursor: move;
+}
+g.conceptG circle{
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 1px;
+}
+g.conceptG:hover circle{
+  fill: rgb(200, 238, 241);
+}
+g.selected circle{
+  fill: #f6fbff;
+  stroke: #000000;
+  stroke-width: 1.5px;
+}
+g.selected:hover circle{
+  fill: #f6fbff;
+}
+g.conceptG rect{
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.conceptG:hover rect{
+  fill: rgb(200, 238, 241);
+}
+g.selected rect{
+  fill: #f6fbff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.selected:hover rect{
+  fill: #f6fbff;
+}
+
+g.conceptG ellipse{
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.conceptG:hover ellipse{
+  fill: rgb(200, 238, 241);
+}
+g.selected ellipse{
+  fill: #f6fbff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.selected:hover ellipse{
+  fill: #f6fbff;
+}
+g.conceptG polygon{
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.conceptG:hover polygon{
+  fill: rgb(200, 238, 241);
+}
+g.selected polygon{
+  fill: #f6fbff;
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.selected:hover polygon{
+  fill: #f6fbff;
+}
+g.conceptG line{
+  stroke: #000000;
+  stroke-width: 1px;
+}
+
+g.conceptG path{
+  stroke: #000000;
+  stroke-width: 2px;
+}
+g.selected path{
+  stroke: #000000;
+  stroke-width: 2px;
+}
+
+g.conceptG text{    
+  font-size: 12px;
+  fill: #000000;
+}
+
+g.selected path.link{
+  stroke: #0000ff !important;
+}
+
+marker{
+  fill: #000000;
+}
+
+path.linkBG {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 24px;
+  cursor: default;
+  pointer-events: stroke;
+  visibility: hidden;
+}
+
+path.link {
+  fill: none;
+  stroke: #a6a6f2;
+  stroke-width: 2px;
+  cursor: default;
+}
+
+/* path.link:hover{
+  stroke: rgb(94, 196, 204) !important;
+} */
+
+path.link[linkType=dash] {
+  stroke: #cccccc;
+  stroke-dasharray: 10,5;
+}
+
+path.link[linkType=solid] {
+  stroke: #000000;
+}
+
+
+g.connect-node circle{
+  fill: #BEFFFF;
+}
+
+path.link.hidden{
+  stroke-width: 0;
+  display: none
+}
+
+path.link.selected {
+  stroke: #000000;
+}
+
+g.start circle {
+  fill: #00ff00 !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+g.start polygon {
+  fill: #fff !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+g.start text {
+  display: none;
+  /* font-family: trebuche;
+  font-size: 37px;
+  fill: #fff;
+  font-weight: 550; */
+}
+
+g.end circle {
+  fill: #ff0000 !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+g.end polygon {
+  fill: #fff !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+g.end text {
+  display: none;
+  /* font-family: trebuche;
+  font-size: 37px;
+  fill: #fff;
+  font-weight: 550; */
+}
+
+.rmenu{
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
+  font-weight: 400;
+  border: 1px solid rgba(34,36,38,.15);
+  border-radius: .28571429rem;
+  min-height: 2.85714286em;
+  font-size: .78571429rem;
+}
+.rmenu .item {
+    display: block;
+    background: 0 0;
+    border-top: none;
+    border-right: none;
+    position: relative;
+    vertical-align: middle;
+    line-height: 1;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-box-flex: 0;
+    flex: 0 0 auto;
+    user-select: none;
+    padding: .92857143em 1.14285714em;
+    text-transform: none;
+    color: rgba(0,0,0,.87);
+    font-weight: 400;
+    transition: background .1s ease,box-shadow .1s ease,color .1s ease,-webkit-box-shadow .1s ease;
+}
+.rmenu a.item:hover {
+    cursor: pointer;
+    background: rgba(0,0,0,.03);
+    color: rgba(0,0,0,.95);
+}
+.rmenu>.item:first-child {
+    border-radius: .28571429rem .28571429rem 0 0;
+}
+
+/* Added by Simon 5/14/2018 */
+.components-btn { 
+  display: flex;
+  height: 28px;
+  margin-top: 1px; 
+  line-height: 28px; 
+  min-width: 100px; 
+  min-height: 28px; 
+  border-style: solid;
+  border-width: 1px;
+  border-color: #eee;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.components-btn:hover {
+  border-color: #aaaaaa;
+}
+
+.components-btn:not(.noComponent):hover span:after {
+  content: '\00BB'; 
+  color: #21BA45;
+  margin-left: 5px;
+}
+
+.components-btn.noComponent.active {
+  background: #e6e7f5;
+  border-style: inset;
+}
+
+.components-btn span {
+  font-size: 12px;
+  padding-left: 12px; 
+}

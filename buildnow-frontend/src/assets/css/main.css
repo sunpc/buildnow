@@ -1,0 +1,270 @@
+* {
+    margin: 0;
+    padding: 0;
+    -moz-user-select: none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: text;
+    user-select: none;
+}
+
+html,
+body,
+#app,
+.wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'PingFang SC', "Helvetica Neue", Helvetica, "microsoft yahei", arial, STHeiTi, sans-serif;
+}
+
+a {
+    text-decoration: none
+}
+
+.content-box {
+    position: absolute;
+    left: 250px;
+    right: 0;
+    top: 70px;
+    bottom: 0;
+    /* overflow-y: scroll; */
+    -webkit-transition: left .3s ease-in-out;
+    transition: left .3s ease-in-out;
+    background: #fff;
+}
+
+.content {
+    width: auto;
+    padding: 40px;
+}
+
+.content-collapse {
+    left: 0px;
+}
+
+/* .container {
+    padding: 30px;
+    background-image: url(../images/ibuild_design_bg.gif);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+} */
+
+.crumbs {
+    margin-bottom: 20px;
+}
+
+.pagination {
+    margin: 20px 0;
+    text-align: right;
+}
+
+.plugins-tips {
+    padding: 20px 10px;
+    margin-bottom: 20px;
+}
+
+.el-button+.el-tooltip {
+    margin-left: 10px;
+}
+
+.el-table tr:hover {
+    background: #f6faff;
+}
+
+.mgb20 {
+    margin-bottom: 20px;
+}
+
+.move-enter-active,
+.move-leave-active {
+    transition: opacity .5s;
+}
+
+.move-enter,
+.move-leave {
+    opacity: 0;
+}
+
+/*BaseForm*/
+
+.form-box {
+    width: 600px;
+}
+
+.form-box .line {
+    text-align: center;
+}
+
+.el-time-panel__content::after,
+.el-time-panel__content::before {
+    margin-top: -7px;
+}
+
+.el-time-spinner__wrapper .el-scrollbar__wrap:not(.el-scrollbar__wrap--hidden-default) {
+    padding-bottom: 0;
+}
+
+/*Upload*/
+
+.pure-button {
+    width: 150px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.g-core-image-corp-container .info-aside {
+    height: 45px;
+}
+
+.el-upload--text {
+    background-color: #fff;
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    box-sizing: border-box;
+    width: 360px;
+    height: 180px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.el-upload--text .el-icon-upload {
+    font-size: 67px;
+    color: #97a8be;
+    margin: 40px 0 16px;
+    line-height: 50px;
+}
+
+.el-upload--text {
+    color: #97a8be;
+    font-size: 14px;
+    text-align: center;
+}
+
+.el-upload--text em {
+    font-style: normal;
+}
+
+/*VueEditor*/
+
+.ql-container {
+    min-height: 400px;
+}
+
+.ql-snow .ql-tooltip {
+    transform: translateX(117.5px) translateY(10px) !important;
+}
+
+.editor-btn {
+    margin-top: 20px;
+}
+
+/* markdown */
+.v-note-wrapper .v-note-panel {
+    min-height: 500px;
+}
+
+/* Flowchart - by Simon */
+.el-tabs__header{
+    margin-bottom: 0 !important;
+}
+.el-tabs--card>.el-tabs__header .el-tabs__nav {
+    background-color: #e5e5e5 !important;
+}
+.el-collapse-item__header {
+    height: 32px;
+    line-height: 32px;
+    background-color: #e5e5e5 !important;
+}
+.el-collapse-item__content {
+    padding-bottom: 5px !important;
+}
+.el-collapse-item__arrow {
+    line-height: 32px !important;
+}
+.el-collapse-item__wrap {
+    background-color: #eee !important;
+}
+
+/* El overrides - by Simon */
+.el-container {
+    background-color: #fff;
+}
+.el-dialog__header {
+    border-bottom: 1px solid #ccc;
+}
+.el-form-item {
+    margin-bottom: 10px !important;
+}
+.el-color-picker {
+    position: fixed !important;
+    line-height: 1 !important;
+    width: 48px;
+    height: 32px;
+}
+.el-color-picker__color {
+    border: 0px;
+}
+.el-color-picker__color-inner {
+    display: none !important;
+}
+.el-color-picker--mini .el-color-picker__trigger {
+    width: 48px;
+    height: 32px;
+    padding: 4px 8px 4px 8px;
+}
+.el-color-picker__icon {
+    font-family: "iconfont" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    color: #606266;
+}
+.el-color-picker__icon.el-icon-arrow-down:before {
+    content: "\E614";
+}
+.el-button.el-color-dropdown__link-btn.el-button--text.el-button--mini {
+    display: none !important;
+}
+/* Handsontable overrides - by Simon */
+/* context menu is always on the top layer */
+.htContextMenu:not(.htGhostTable) {
+    z-index: 9999 !important;
+}
+/* no overflow-x scrollbar in tables */
+.ht_master .wtHolder {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+/* Search function */
+.search-autocomplete li {
+    line-height: normal;
+    padding: 7px;
+}
+.search-autocomplete li .name {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.search-autocomplete li .addr {
+    font-size: 12px;
+    color: #b4b4b4;
+}
+.search-autocomplete li .highlighted .addr {
+    color: #ddd;
+}
+input[popperclass="search-autocomplete"] {
+    line-height: 32px;
+    height: 32px;
+}
+.el-dialog--center .el-dialog__footer {
+  text-align: right;
+}
