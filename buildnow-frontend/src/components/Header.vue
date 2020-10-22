@@ -1,6 +1,9 @@
 <template>
     <div class="header">
-        <div class="logo" @click="gotoHome">BuildNow</div>
+        <div class="collapse-btn" @click="gotoHome">
+            <i class="iconfont icon-workspace"></i>
+        </div>
+        <div class="logo">{{workspace}}</div>
         <div class="header-left">
             <el-menu
                 class="el-menu-demo"
@@ -10,7 +13,10 @@
                 text-color="#fff"
                 active-text-color="#ffd04b"
                 :default-active="$route.name" router>
+                <el-menu-item index="/home">Home</el-menu-item>
                 <el-menu-item index="/design">Design</el-menu-item>
+                <el-menu-item index="/docs">Docs</el-menu-item>
+
           </el-menu>
         </div>
         <div class="header-right">
@@ -28,7 +34,7 @@
                         <i class="el-icon-caret-bottom"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>Signed in as <b>Simon</b></el-dropdown-item>
+                        <el-dropdown-item>Signed in as <b>{{username}}</b></el-dropdown-item>
                         <el-dropdown-item divided command="signout">Sign out</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -49,11 +55,18 @@ export default {
   methods: {
     handleCommand(command) {
       if (command == "signout") {
-        this.$router.push("/design");
+        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("workspace");
+        sessionStorage.removeItem("userid");
+        sessionStorage.removeItem("w3name");
+        sessionStorage.removeItem("userrole");
+        sessionStorage.removeItem("jobproperties");
+        this.$router.push("/login");
+        this.$router.go(0);
       }
     },
     gotoHome() {
-      this.$router.push("/design");
+      this.$router.push("/home");
     },
     handleFullScreen() {
       let element = document.documentElement;
