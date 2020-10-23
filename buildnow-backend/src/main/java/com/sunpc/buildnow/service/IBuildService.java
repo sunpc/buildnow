@@ -7,8 +7,6 @@ public interface IBuildService {
 	
 	public Map<String, Object> authenticate(String email, String password,String envcode);
 	
-	public Map<String, Object> searchBluePages(String email);
-	
 	public Map<String, Object> getEnvs();
 	
 	public Map<String, Object> getEnv(String envCode);
@@ -55,15 +53,5 @@ public interface IBuildService {
 	public Map<String, Object> searchJobs(String queryString, String envCode);
 	
 	public Map<String, Object> getRecentJobs(String envCode);
-
-	public Map<String, Object> getLayoutList(String params);
-
-	public Map<String, Object> getLayout(String params);
-
-	public Map<String, Object> saveLayout(Map<String, Object> params);
-	
-	public Map<String, Object> getTableList(String schema, String queryTable);
-
-	public Map<String, Object> getTableColumnList(String schema, String queryTable);
 
 }

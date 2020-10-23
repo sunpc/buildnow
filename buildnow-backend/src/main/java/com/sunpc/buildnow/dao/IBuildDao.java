@@ -5,6 +5,8 @@ import java.util.Map;
 
 public interface IBuildDao {
 
+	public Map<String, Object> authenticate(String email, String password, String envCode);
+
 	public Map<String, Object> getEnvs();
 
 	public Map<String, Object> getEnv(String envCode);
@@ -41,14 +43,4 @@ public interface IBuildDao {
 	
 	public Map<String, Object> getRecentJobs(String envCode);
 
-	public Map<String, Object> getLayoutList(String queryString);
-
-	public Map<String, Object> getLayout(String queryString);
-	
-	public Map<String, Object> saveLayout(Map<String, Object> params);
-
-	public List<Map<String, Object>> getTableList(String schema, String queryTable);
-
-	public List<Map<String, Object>> getTableColumnList(String schema, String tableName);
-	
 }

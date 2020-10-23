@@ -4,10 +4,10 @@
         <div class="ms-login">
             <el-form :model="loginForm" status-icon :show-message="false" :rules="rules" ref="loginForm" label-width="0px">
                 <el-form-item prop="username">
-                    <el-input v-model="loginForm.username" placeholder="Username" @blur="getDefaultWorkspace"></el-input>
+                    <el-input v-model="loginForm.username" placeholder="Your email address" @blur="getDefaultWorkspace"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input type="password" placeholder="Password" v-model="loginForm.password" @keyup.enter.native="submitForm('loginForm')"></el-input>
+                    <el-input type="password" placeholder="Your password" v-model="loginForm.password" @keyup.enter.native="submitForm('loginForm')"></el-input>
                 </el-form-item>
                 <el-form-item prop="workspace">
                     <el-select v-model="loginForm.workspace" placeholder="Your development workspace">
@@ -84,9 +84,8 @@ export default {
                 sessionStorage.setItem("workspace", this.loginForm.workspace);
                 sessionStorage.setItem("username", this.loginForm.username);
                 sessionStorage.setItem("userid", res.data.userId);
-                sessionStorage.setItem("w3name", res.data.userName);
+                sessionStorage.setItem("fullname", res.data.userName);
                 sessionStorage.setItem("userrole", res.data.userRole);
-                sessionStorage.setItem("jobproperties", JSON.stringify(res.data.defaults.result));
                 loading.close();
                 this.$router.push("/");
               } else {
@@ -152,11 +151,11 @@ export default {
   position: absolute;
   margin: 0;
   padding: 40px;
-  width: 600px; 
+  width: 500px; 
   height: 200px;
   left: 50%; 
   top: 50%; 
-  margin-left: -340px; 
+  margin-left: -290px; 
   margin-top: -100px;
   border-radius: 5px;
   background: #fff;

@@ -27,7 +27,7 @@
                     </el-tooltip>
                 </div>
                 <!-- User image -->
-                <div class="user-avator"><img src="/static/images/avatar.jpg"></div>
+                <div class="user-avator"><img :src="userimg"></div>
                 <!-- User menu -->
                 <el-dropdown class="user-name" trigger="click" @command="handleCommand">
                     <span class="el-dropdown-link">
@@ -35,6 +35,8 @@
                     </span>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item>Signed in as <b>{{username}}</b></el-dropdown-item>
+                        <el-dropdown-item divided command="help">Help</el-dropdown-item>
+                        <el-dropdown-item v-if="displaySettings" command="settings">Settings</el-dropdown-item>
                         <el-dropdown-item divided command="signout">Sign out</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -52,15 +54,39 @@ export default {
       message: 2
     };
   },
+  computed: {
+    username() {
+      return sessionStorage.getItem("fullname");
+    },
+    userimg() {
+      return (
+        "/static/images/avatar.jpg?email=" + sessionStorage.getItem("username")
+      );
+    },
+    workspace() {
+      let workspace = sessionStorage.getItem("workspace");
+      return workspace ? workspace : "BuildNow";
+    },
+    displaySettings() {
+      let userRole = sessionStorage.getItem("userrole");
+      if (userRole == "Admin") {
+        return true;
+      }
+      return false;
+    }
+  },
   methods: {
     handleCommand(command) {
-      if (command == "signout") {
+      if (command == "help") {
+        this.$router.push("/docs");
+      } else if (command == "settings") {
+        this.$router.push("/settings");
+      } else if (command == "signout") {
         sessionStorage.removeItem("username");
         sessionStorage.removeItem("workspace");
         sessionStorage.removeItem("userid");
-        sessionStorage.removeItem("w3name");
+        sessionStorage.removeItem("fullname");
         sessionStorage.removeItem("userrole");
-        sessionStorage.removeItem("jobproperties");
         this.$router.push("/login");
         this.$router.go(0);
       }

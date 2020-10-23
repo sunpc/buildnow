@@ -1,4 +1,4 @@
-package com.sunpc.buildnow.util.io;
+package com.sunpc.buildnow.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

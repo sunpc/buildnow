@@ -30,6 +30,12 @@ export default new Router({
           path: '/docs',
           component: resolve => require(['../components/Docs.vue'], resolve),
           meta: { title: 'Docs' }
+        },
+        {
+          name: '/settings',
+          path: '/settings',
+          component: resolve => require(['../components/Settings.vue'], resolve),
+          meta: { title: 'Settings' }
         }
       ]
     },

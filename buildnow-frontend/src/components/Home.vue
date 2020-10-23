@@ -3,7 +3,7 @@
         <div class="home-container">
             <el-row>
                 <h1 align="center" style="padding-top: 50px; margin-bottom: 0.5rem; font-family: inherit; font-size:2rem; font-weight: 400; line-height: 1.2;">
-                  Let us build a workflow chart now!
+                  Let&apos;s build a workflow chart now!
                 </h1>
                 <p align="center" style="margin-top: 50px; padding-bottom: 80px">
                     <el-button type="primary" size="large" style="width:180px;" @click="gotoDesign()">Build Now</el-button>

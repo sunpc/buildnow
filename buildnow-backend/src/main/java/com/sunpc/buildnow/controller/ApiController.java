@@ -22,12 +22,6 @@ public class ApiController {
 		String envcode = (String) params.get("envcode");
 		return buildService.authenticate(username, password, envcode);
 	}
-	
-	@PostMapping("/searchBluePages")
-	public Map<String, Object> searchBluePages(@RequestBody Map<String, Object> params) {
-		String email = (String) params.get("email");
-		return buildService.searchBluePages(email);
-	}
 
 	@SuppressWarnings("unchecked")
 	@PostMapping("/build")
@@ -150,40 +144,5 @@ public class ApiController {
 		String envCode = (String) params.get("envCode");
 		return buildService.getRecentJobs(envCode);
 	}
-
-	//getLayoutList
-	@PostMapping("/getLayoutList")
-	public Map<String, Object> getLayoutList(@RequestBody Map<String, Object> params) {
- 		String layoutName = (String) params.get("queryString");
- 		return buildService.getLayoutList(layoutName);
-	}
-
-	//getLayout
- 	@PostMapping("/getLayout")
-	public Map<String, Object> getLayout(@RequestBody Map<String, Object> params) {
- 		String layoutName = (String) params.get("queryString"); 		
-		return buildService.getLayout(layoutName);
-	}
- 	
- 	//saveLayout
- 	@PostMapping("/saveLayout")
-	public Map<String, Object> saveLayout(@RequestBody Map<String, Object> params) {
-		return buildService.saveLayout(params);
-	}
-    
-    @PostMapping("/getTableList")
-    public Map<String, Object> getTableList(@RequestBody Map<String, Object> params) {
-        String querySchema = (String) params.get("querySchema");
-        String queryTable = (String) params.get("queryTable");
-        return buildService.getTableList(querySchema, queryTable);
-    }
-    
-    @PostMapping("/getTableColumnList")
-    public Map<String, Object> getTableColumnList(@RequestBody Map<String, Object> params) {
-        String querySchema = (String) params.get("querySchema");
-        String queryTable = (String) params.get("queryTable");
-        return buildService.getTableColumnList(querySchema, queryTable);
-    }
-	
 
 }

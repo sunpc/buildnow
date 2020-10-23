@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.sunpc.buildnow.util.io.CodeUtil;
+import com.sunpc.buildnow.util.CodeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,60 +20,25 @@ public class BuildService implements IBuildService {
 	@Autowired
 	private IBuildDao buildDao;
 
-	public static long USER_ID;
-
 	@Override
 	public Map<String, Object> authenticate(String email, String password, String envCode) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("authenticated", false);
 		result.put("message", "");
-//		try {
-//			Properties parms = new Properties();
-//			parms.put(EDConstants.IIP_CWA_JNDI_SECURITY_PROTOCOL, "tls");
-//			parms.put(EDConstants.IIP_CWA_FORCE_SECURE_LDAP_SEARCH, "true");
-//			IIPUtilities.authenticate("bluepages.ibm.com", email, password, parms);
-//			// If IIP authenticated
-//			Map<String, Object> rs = buildDao.getMember(envCode, email);
-//			List<Map<String, Object>> memberList = (List<Map<String, Object>>) rs.get("result");
-//			if (memberList.size() > 0) {
-//				// Return member
-//				Map<String, Object> member = memberList.get(0);
-//				result.put("authenticated", true);
-//				result.put("message", "authenticate success");
-//				result.put("userId", Long.valueOf(String.valueOf(member.get("USER_ID"))));
-//				USER_ID = Long.valueOf(String.valueOf(member.get("USER_ID")));
-//				result.put("userName", member.get("USER_NAME").toString().trim());
-//				result.put("userRole", member.get("USER_ROLE").toString().trim());
-//				result.put("defaults", buildDao.getDefaults(envCode));
-//				// Update defaultEnvIndc
-//				buildDao.updateDefaultEnv(Long.valueOf(String.valueOf(member.get("USER_ID"))), envCode);
-//			} else {
-//				result.put("message", "You don't have permission to access / on this workspace.");
-//			}
-//		} catch (Exception e) {
-//			System.err.println("Authentication failed: " + e.getMessage());
-//			result.put("message", "Incorrect username or password. Please retry.");
-//			e.printStackTrace();
-//			return result;
-//		}
-		return result;
-	}
+		Map<String, Object> auth = buildDao.authenticate(email, password, envCode);
 
-	@Override
-	public Map<String, Object> searchBluePages(String email) {
-		Map<String, Object> result = new HashMap<String, Object>();
-//		try {
-//			BPResults peopleResults = BluePages.getPersonsByInternet(email);
-//			String firstName = (String) peopleResults.getColumn("HRFIRSTNAME").elementAt(0);
-//			String lastName = (String) peopleResults.getColumn("HRLASTNAME").elementAt(0);
-//			result.put("result", "success");
-//			result.put("name", firstName + " " + lastName);
-//		} catch (Exception e) {
-//			result.put("result", "failed");
-//			result.put("message", e.getMessage());
-//			e.printStackTrace();
-//			return result;
-//		}
+		if (auth != null) {
+			result.put("authenticated", true);
+			result.put("message", "authenticate success");
+			result.put("userId", Long.parseLong(String.valueOf(auth.get("USER_ID"))));
+			result.put("userName", auth.get("USER_NAME").toString().trim());
+			result.put("userRole", auth.get("USER_ROLE").toString().trim());
+			// Update defaultEnvIndc
+			buildDao.updateDefaultEnv(Long.parseLong(auth.get("USER_ID").toString()), envCode);
+		} else {
+			result.put("message", "You don't have permission to access / on this workspace.");
+		}
+
 		return result;
 	}
 
@@ -1371,45 +1336,6 @@ public class BuildService implements IBuildService {
 	@Override
 	public Map<String, Object> getRecentJobs(String envCode) {
 		return buildDao.getRecentJobs(envCode);
-	}
-
-	@Override
-	public Map<String, Object> getLayoutList(String params) {
-		return buildDao.getLayoutList(params);
-	}
-
-	@Override
-	public Map<String, Object> getLayout(String params) {
-		return buildDao.getLayout(params);
-	}
-
-	@Override
-	public Map<String, Object> saveLayout(Map<String, Object> params) {
-		// buildDao.cleanLayout(?);
-
-		// just ERWIN debug purpose
-		// System.out.println("received layout = " + params.get("layout"));
-
-		// Map<String, Object> resultMap = new HashMap<String, Object>();
-		// return resultMap;
-
-		return buildDao.saveLayout(params);
-	}
-	
-	@Override
-	public Map<String, Object> getTableList(String schema, String queryTable) {
-		Map<String, Object> data = new HashMap<String, Object>();
-		List<Map<String, Object>> tableList = buildDao.getTableList(schema, queryTable);
-		data.put("data", tableList);
-		return data;
-	}
-	
-	@Override
-	public Map<String, Object> getTableColumnList(String schema, String queryTable) {
-		Map<String, Object> data = new HashMap<String, Object>();
-		List<Map<String, Object>> tableColumnList = buildDao.getTableColumnList(schema, queryTable);
-		data.put("data", tableColumnList);
-		return data;
 	}
 
 }
